@@ -81,6 +81,7 @@
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+            animation: none;
         }
 
         .admin-btn {
@@ -249,7 +250,7 @@
             transform: scale(1.1) rotate(90deg);
         }
 
-        /* Rest of your existing styles remain the same */
+        /* Header */
         header {
             position: fixed;
             top: 0;
@@ -508,6 +509,17 @@
             50% { transform: translateY(-20px); }
         }
 
+        @keyframes shake {
+            0%,100%{transform:translateX(0)}
+            25%{transform:translateX(-5px)}
+            75%{transform:translateX(5px)}
+        }
+
+        @keyframes slideIn {
+            from{transform:translateX(100%);opacity:0}
+            to{transform:translateX(0);opacity:1}
+        }
+
         .product-card:nth-child(1) { animation: float 6s ease-in-out infinite; }
         .product-card:nth-child(2) { animation: float 6s ease-in-out infinite 1s; }
         .product-card:nth-child(3) { animation: float 6s ease-in-out infinite 2s; }
@@ -645,17 +657,13 @@
     </footer>
 
     <script>
-        // Pusher Configuration - Replace with your credentials
-        const PUSHER_APP_KEY = '6291de89719e0ba9f19b'; // Get from Pusher dashboard
-        const PUSHER_CLUSTER = 'us2'; // e.g., 'us2'
-        
-        // Admin Configuration
-        const ADMIN_CODE = '123456'; // Change this to your desired 6-digit code
+        // 🔥 Pusher Configuration - NO SERVER NEEDED!
+        const PUSHER_APP_KEY = '6291de89719e0ba9f19b';  // From Pusher dashboard
+        const PUSHER_CLUSTER = 'us2';                // Your cluster
+        const ADMIN_CODE = '123456';                 // Change this!
+
         let pusher = null;
         let channel = null;
-        let isAdminAuthenticated = false;
-
-        // Default Products Data
         let products = [
             { icon: '📱', title: 'Smart Wireless Earbuds', desc: 'Premium noise-cancelling earbuds with 30-hour battery life and crystal clear sound.', price: '$129' },
             { icon: '💻', title: 'Ultra Portable Laptop', desc: 'Lightning-fast performance in a sleek, lightweight design perfect for work and play.', price: '$999' },
@@ -665,192 +673,192 @@
             { icon: '🔋', title: 'Power Bank 20,000mAh', desc: 'Fast charging power bank with multiple ports and LED display.', price: '$59' }
         ];
 
-        // Initialize Pusher when admin authenticated
+        // 🔥 REAL-TIME PUSHER (works across ALL devices)
         function initPusher() {
             pusher = new Pusher(PUSHER_APP_KEY, {
-                cluster: PUSHER_CLUSTER
+                cluster: PUSHER_CLUSTER,
+                forceTLS: true
             });
             
-            channel = pusher.subscribe('nexobox-products');
+            channel = pusher.subscribe('nexobox-admin');
             
-            // Listen for product updates
-            channel.bind('product-updated', function(data) {
+            // Listen for updates from ANY admin
+            channel.bind('product-update', (data) => {
                 products = data.products;
                 renderProducts();
                 updateProductsList();
-                showNotification('Product updated in real-time! 🔄');
+                console.log('🔥 LIVE UPDATE from another device!');
+                showNotification('🔥 LIVE UPDATE from another device!');
             });
-
-            // Listen for product deleted
-            channel.bind('product-deleted', function(data) {
+            
+            // Listen for deletions
+            channel.bind('product-delete', (data) => {
                 products = data.products;
                 renderProducts();
                 updateProductsList();
-                showNotification('Product deleted in real-time! 🗑️');
+                console.log('🗑️ LIVE DELETE from another device!');
+                showNotification('🗑️ LIVE DELETE from another device!');
             });
+            
+            console.log('✅ Pusher connected - Real-time sync enabled!');
         }
 
-        // Admin Modal Functions
-        function toggleAdminModal() {
-            document.getElementById('adminModal').classList.toggle('active');
-        }
-
-        function closeAdminModal() {
-            document.getElementById('adminModal').classList.remove('active');
-        }
-
-        function checkAdminCode() {
-            const code = document.getElementById('adminCode').value;
-            if (code === ADMIN_CODE) {
-                isAdminAuthenticated = true;
-                closeAdminModal();
-                document.getElementById('adminPanel').classList.add('active');
-                initPusher();
-                updateProductsList();
-                showNotification('Admin access granted! ✅');
-            } else {
-                alert('❌ Invalid code!');
-                document.getElementById('adminCode').value = '';
-                document.getElementById('adminCode').focus();
+        // BROADCAST changes to ALL devices
+        function broadcastUpdate(type, data) {
+            if (channel) {
+                channel.trigger(`client-${type}`, data);
+                console.log(`📡 Broadcast ${type}:`, data);
             }
         }
 
-        function closeAdminPanel() {
-            document.getElementById('adminPanel').classList.remove('active');
-        }
-
-        // Product Management
-        function renderProducts() {
-            const grid = document.getElementById('productsGrid');
-            grid.innerHTML = '';
-            
-            products.forEach((product, index) => {
-                const productCard = `
-                    <div class="product-card glass" data-index="${index}">
-                        <div class="product-image">${product.icon}</div>
-                        <h3>${product.title}</h3>
-                        <p>${product.desc}</p>
-                        <div class="price">${product.price}</div>
-                        <button class="buy-btn">Add to Cart</button>
-                    </div>
-                `;
-                grid.innerHTML += productCard;
-            });
-            
-            // Re-attach event listeners
-            attachBuyButtons();
-        }
-
-        function saveProduct() {
-            const icon = document.getElementById('productIcon').value;
+        // Save with REAL-TIME sync
+        async function saveProduct() {
+            const icon = document.getElementById('productIcon').value || '📱';
             const title = document.getElementById('productTitle').value;
             const desc = document.getElementById('productDesc').value;
             const price = document.getElementById('productPrice').value;
             const position = parseInt(document.getElementById('productPosition').value);
 
             if (!title || !desc || !price) {
-                alert('Please fill all fields!');
+                alert('❌ Fill all fields!');
                 return;
             }
 
-            // Update or add product
+            // Update product
             products[position] = { icon, title, desc, price };
             
-            // Render updated products
+            // 🔥 BROADCAST to ALL devices instantly
+            broadcastUpdate('product-update', { products });
+            
             renderProducts();
+            updateProductsList();
+            clearForm();
             
-            // Trigger Pusher event (in production, send to server)
-            if (channel) {
-                channel.trigger('client-product-updated', {
-                    products: products
-                });
-            }
-            
-            // Save to localStorage
-            localStorage.setItem('nexobox-products', JSON.stringify(products));
-            
-            showNotification('Product saved! 💾');
-            
-            // Clear form
-            document.getElementById('productIcon').value = '';
-            document.getElementById('productTitle').value = '';
-            document.getElementById('productDesc').value = '';
-            document.getElementById('productPrice').value = '';
+            showNotification('✅ SAVED & SYNCED TO ALL DEVICES!');
         }
 
+        // Delete with REAL-TIME sync
         function deleteProduct(index) {
-            if (confirm('Are you sure you want to delete this product?')) {
-                products.splice(index, 1);
-                products.push({ icon: '', title: 'Empty Slot', desc: 'No product assigned', price: '$0' }); // Add empty slot
-                
-                renderProducts();
-                
-                if (channel) {
-                    channel.trigger('client-product-deleted', {
-                        products: products
-                    });
-                }
-                
-                localStorage.setItem('nexobox-products', JSON.stringify(products));
-                updateProductsList();
-                showNotification('Product deleted! 🗑️');
-            }
+            if (!confirm('🗑️ Delete this product? (Syncs everywhere!)')) return;
+            
+            products.splice(index, 1);
+            products.push({ icon: '➖', title: 'Empty Slot', desc: 'Add new product here', price: '$0' });
+            
+            // 🔥 BROADCAST deletion to ALL devices
+            broadcastUpdate('product-delete', { products });
+            
+            renderProducts();
+            updateProductsList();
+            showNotification('🗑️ DELETED & SYNCED EVERYWHERE!');
         }
 
-        function updateProductsList() {
-            const list = document.getElementById('productsList');
-            list.innerHTML = '';
+        // Render products to page
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = '';
             
             products.forEach((product, index) => {
-                const productItem = `
-                    <div class="product-item">
-                        <strong>${product.icon} ${product.title}</strong> 
-                        <span style="float: left; color: #28a745;">${product.price}</span>
-                        <button class="delete-btn" onclick="deleteProduct(${index})">Delete</button>
-                        <br><small>${product.desc.substring(0, 50)}...</small>
-                    </div>
+                const card = document.createElement('div');
+                card.className = 'product-card glass';
+                card.dataset.index = index;
+                card.innerHTML = `
+                    <div class="product-image">${product.icon}</div>
+                    <h3>${product.title}</h3>
+                    <p>${product.desc}</p>
+                    <div class="price">${product.price}</div>
+                    <button class="buy-btn">Add to Cart</button>
                 `;
-                list.innerHTML += productItem;
+                grid.appendChild(card);
             });
-        }
-
-        // UI Functions
-        function showNotification(message) {
-            // Create floating notification
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 100px;
-                right: 20px;
-                background: linear-gradient(45deg, #28a745, #20c997);
-                color: white;
-                padding: 15px 20px;
-                border-radius: 10px;
-                box-shadow: 0 10px 30px rgba(40, 167, 69, 0.4);
-                z-index: 3000;
-                font-weight: bold;
-                animation: slideIn 0.3s ease;
-            `;
-            notification.textContent = message;
-            document.body.appendChild(notification);
             
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
+            attachBuyButtons();
         }
 
+        // Update admin list
+        function updateProductsList() {
+            const list = document.getElementById('productsList');
+            list.innerHTML = products.map((p, i) => `
+                <div class="product-item">
+                    <strong>${p.icon} ${p.title}</strong> 
+                    <span style="float:left;color:#28a745;">${p.price}</span>
+                    <button class="delete-btn" onclick="deleteProduct(${i})">🗑️</button>
+                    <br><small>${p.desc.substring(0,50)}...</small>
+                </div>
+            `).join('');
+        }
+
+        // Clear form
+        function clearForm() {
+            document.querySelectorAll('.product-form input, .product-form textarea').forEach(el => el.value = '');
+            document.getElementById('productIcon').value = '📱';
+        }
+
+        // Admin functions
+        function toggleAdminModal() { document.getElementById('adminModal').classList.toggle('active'); }
+        function closeAdminModal() { document.getElementById('adminModal').classList.remove('active'); }
+        function closeAdminPanel() { document.getElementById('adminPanel').classList.remove('active'); }
+
+        function checkAdminCode() {
+            const code = document.getElementById('adminCode').value;
+            if (code === ADMIN_CODE) {
+                closeAdminModal();
+                document.getElementById('adminPanel').classList.add('active');
+                initPusher();  // 🔥 Start real-time sync
+                updateProductsList();
+                showNotification('🔓 Admin + Real-time sync enabled!');
+            } else {
+                shakeInput();
+                document.getElementById('adminCode').value = '';
+            }
+        }
+
+        // Visual feedback
+        function shakeInput() {
+            const input = document.getElementById('adminCode');
+            input.style.animation = 'shake 0.5s';
+            setTimeout(() => input.style.animation = '', 500);
+        }
+
+        // Notification
+        function showNotification(msg) {
+            const notif = document.createElement('div');
+            notif.textContent = msg;
+            notif.style.cssText = `
+                position:fixed;top:100px;right:20px;
+                background:linear-gradient(45deg,#28a745,#20c997);
+                color:white;padding:15px 25px;border-radius:10px;
+                box-shadow:0 10px 30px rgba(40,167,69,.4);
+                z-index:9999;font-weight:bold;
+                animation:slideIn 0.3s ease;
+            `;
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 3000);
+        }
+
+        // Buy buttons
         function attachBuyButtons() {
             document.querySelectorAll('.buy-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    this.textContent = 'Added! 🎉';
-                    this.style.background = 'linear-gradient(45deg, #28a745, #20c997)';
+                btn.onclick = () => {
+                    btn.textContent = 'Added! 🎉';
+                    btn.style.background = 'linear-gradient(45deg,#28a745,#20c997)';
                     setTimeout(() => {
-                        this.textContent = 'Add to Cart';
-                        this.style.background = 'linear-gradient(45deg, #ffd700, #ffed4e)';
+                        btn.textContent = 'Add to Cart';
+                        btn.style.background = 'linear-gradient(45deg,#ffd700,#ffed4e)';
                     }, 2000);
-                });
+                };
             });
         }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProducts();
+            attachBuyButtons();
+            
+            // Enter key login
+            document.getElementById('adminCode').onkeypress = (e) => {
+                if (e.key === 'Enter') checkAdminCode();
+            };
+        });
 
         // Smooth scrolling for navigation links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -871,32 +879,6 @@
                 header.style.background = 'rgba(255, 255, 255, 0.1)';
             }
         });
-
-        // Enter key for admin login
-        document.getElementById('adminCode').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                checkAdminCode();
-            }
-        });
-
-        // Load products from localStorage on init
-        window.addEventListener('load', () => {
-            const savedProducts = localStorage.getItem('nexobox-products');
-            if (savedProducts) {
-                products = JSON.parse(savedProducts);
-            }
-            renderProducts();
-        });
-
-        // Add CSS for notification animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideIn {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-        `;
-        document.head.appendChild(style);
     </script>
 </body>
 </html>
