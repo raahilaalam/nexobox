@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,523 +13,567 @@
             padding: 0;
             box-sizing: border-box;
         }
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
+    /* Glassmorphism Effect */
+    .glass {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
+    }
 
-        /* Glassmorphism Effect */
-        .glass {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
-        }
+    /* Purchase Alert Styles */
+    .purchase-alert {
+        background: linear-gradient(45deg, #ff4757, #ff6b7a) !important;
+        animation: pulse 2s infinite;
+        border-left: 5px solid #ffd700;
+    }
 
-        /* Admin Modal Styles */
-        .admin-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 2000;
-            backdrop-filter: blur(10px);
-        }
+    @keyframes pulse {
+        0%, 100% { box-shadow: 0 10px 30px rgba(255, 71, 87, 0.4); }
+        50% { box-shadow: 0 10px 30px rgba(255, 71, 87, 0.8); }
+    }
 
-        .admin-modal.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    .alert-list {
+        max-height: 300px;
+        overflow-y: auto;
+        margin-top: 1rem;
+    }
 
-        .admin-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(30px);
-            border-radius: 25px;
-            padding: 3rem;
-            max-width: 500px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
+    .alert-item {
+        background: rgba(255, 71, 87, 0.1);
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        border-radius: 8px;
+        border-left: 4px solid #ff4757;
+        font-size: 0.9rem;
+    }
 
-        .admin-container h2 {
-            color: #333;
-            margin-bottom: 2rem;
-            font-size: 2rem;
-        }
+    .alert-time {
+        color: #666;
+        font-size: 0.8rem;
+        margin-bottom: 0.3rem;
+    }
 
-        .admin-input {
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 1.5rem;
-            border: 2px solid rgba(102, 126, 234, 0.3);
-            border-radius: 12px;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.8);
-        }
+    /* NEW: Order counter */
+    .order-counter {
+        background: linear-gradient(45deg, #28a745, #20c997);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-weight: bold;
+        font-size: 0.9rem;
+        margin-left: 10px;
+    }
 
-        .admin-input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
-            animation: none;
-        }
+    /* Admin Modal Styles */
+    .admin-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 2000;
+        backdrop-filter: blur(10px);
+    }
 
-        .admin-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+    .admin-modal.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-        .admin-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
-        }
+    .admin-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(30px);
+        border-radius: 25px;
+        padding: 3rem;
+        max-width: 500px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
 
-        .close-admin {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: none;
-            border: none;
-            font-size: 2rem;
-            color: #666;
-            cursor: pointer;
-        }
+    .admin-container h2 {
+        color: #333;
+        margin-bottom: 2rem;
+        font-size: 2rem;
+    }
 
-        /* Admin Panel */
-        .admin-panel {
-            display: none;
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            width: 400px;
-            max-height: 80vh;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(30px);
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-            z-index: 1500;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            overflow-y: auto;
-        }
+    .admin-input {
+        width: 100%;
+        padding: 15px;
+        margin-bottom: 1.5rem;
+        border: 2px solid rgba(102, 126, 234, 0.3);
+        border-radius: 12px;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.8);
+    }
 
-        .admin-panel.active {
-            display: block;
-        }
+    .admin-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+        animation: none;
+    }
 
-        .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid rgba(102, 126, 234, 0.2);
-        }
+    .admin-btn {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
 
-        .admin-header h3 {
-            color: #333;
-            font-size: 1.5rem;
-        }
+    .admin-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+    }
 
-        .close-panel {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: #666;
-            cursor: pointer;
-        }
+    .close-admin {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: none;
+        border: none;
+        font-size: 2rem;
+        color: #666;
+        cursor: pointer;
+    }
 
-        .product-form {
-            margin-bottom: 2rem;
-            padding: 1.5rem;
-            background: rgba(102, 126, 234, 0.1);
-            border-radius: 15px;
-        }
+    /* Admin Panel */
+    .admin-panel {
+        display: none;
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        width: 400px;
+        max-height: 80vh;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(30px);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        z-index: 1500;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        overflow-y: auto;
+    }
 
-        .form-group {
-            margin-bottom: 1rem;
-        }
+    .admin-panel.active {
+        display: block;
+    }
 
-        .form-group label {
-            display: block;
-            color: #333;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
+    .admin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid rgba(102, 126, 234, 0.2);
+    }
 
-        .form-group input, .form-group textarea, .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid rgba(102, 126, 234, 0.3);
-            border-radius: 8px;
-            background: white;
-        }
+    .admin-header h3 {
+        color: #333;
+        font-size: 1.5rem;
+    }
 
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
+    .close-panel {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: #666;
+        cursor: pointer;
+    }
 
-        .save-btn {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(45deg, #28a745, #20c997);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+    .product-form {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 15px;
+    }
 
-        .save-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(40, 167, 69, 0.4);
-        }
+    .form-group {
+        margin-bottom: 1rem;
+    }
 
-        .products-list {
-            margin-top: 2rem;
-        }
+    .form-group label {
+        display: block;
+        color: #333;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
 
-        .product-item {
-            background: rgba(255, 255, 255, 0.7);
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border-radius: 10px;
-            border-left: 4px solid #667eea;
-        }
+    .form-group input, .form-group textarea, .form-group select {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid rgba(102, 126, 234, 0.3);
+        border-radius: 8px;
+        background: white;
+    }
 
-        .delete-btn {
-            background: #dc3545;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            float: right;
-        }
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
 
-        /* Admin Toggle Button */
-        .admin-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(45deg, #ff6b6b, #ffd93d);
-            border: none;
-            border-radius: 50%;
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-            z-index: 1001;
-            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
-            transition: all 0.3s ease;
-        }
+    .save-btn {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(45deg, #28a745, #20c997);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
 
-        .admin-toggle:hover {
-            transform: scale(1.1) rotate(90deg);
-        }
+    .save-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(40, 167, 69, 0.4);
+    }
 
-        /* Header */
-        header {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-            padding: 1rem 5%;
-            backdrop-filter: blur(20px);
-            background: rgba(255, 255, 255, 0.1);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        }
+    .products-list {
+        margin-top: 2rem;
+    }
 
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    .product-item {
+        background: rgba(255, 255, 255, 0.7);
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 10px;
+        border-left: 4px solid #667eea;
+    }
 
-        .logo {
-            font-size: 2rem;
-            font-weight: bold;
-            background: linear-gradient(45deg, #fff, #f0f0f0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+    .delete-btn {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        float: right;
+    }
 
+    /* Admin Toggle Button */
+    .admin-toggle {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+        border: none;
+        border-radius: 50%;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        z-index: 1001;
+        box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+        transition: all 0.3s ease;
+    }
+
+    .admin-toggle:hover {
+        transform: scale(1.1) rotate(90deg);
+    }
+
+    /* Header */
+    header {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 1000;
+        padding: 1rem 5%;
+        backdrop-filter: blur(20px);
+        background: rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .logo {
+        font-size: 2rem;
+        font-weight: bold;
+        background: linear-gradient(45deg, #fff, #f0f0f0);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .nav-links {
+        display: flex;
+        list-style: none;
+        gap: 2rem;
+    }
+
+    .nav-links a {
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .nav-links a:hover {
+        color: #ffd700;
+        transform: translateY(-2px);
+    }
+
+    .cta-button {
+        padding: 12px 30px;
+        background: linear-gradient(45deg, #ffd700, #ffed4e);
+        color: #333;
+        text-decoration: none;
+        border-radius: 50px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+    }
+
+    .cta-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(255, 215, 0, 0.4);
+    }
+
+    .hero {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: white;
+        position: relative;
+    }
+
+    .hero-content {
+        max-width: 800px;
+        padding: 0 2rem;
+    }
+
+    .hero h1 {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        background: linear-gradient(45deg, #fff, #f0f0f0);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .hero p {
+        font-size: 1.3rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+    }
+
+    .products {
+        padding: 100px 5%;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        text-align: center;
+        color: white;
+        font-size: 3rem;
+        margin-bottom: 4rem;
+    }
+
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+    }
+
+    .product-card {
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .product-card:hover {
+        transform: translateY(-20px) scale(1.02);
+    }
+
+    .product-image {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(45deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+        border-radius: 50%;
+        margin: 0 auto 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        backdrop-filter: blur(10px);
+    }
+
+    .product-card h3 {
+        color: white;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .product-card p {
+        color: rgba(255,255,255,0.8);
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+
+    .price {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #ffd700;
+        margin-bottom: 1rem;
+    }
+
+    .buy-btn {
+        padding: 15px 40px;
+        background: linear-gradient(45deg, #ffd700, #ffed4e);
+        color: #333;
+        border: none;
+        border-radius: 50px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+    }
+
+    .buy-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(255, 215, 0, 0.4);
+    }
+
+    .features {
+        padding: 100px 5%;
+        background: rgba(0, 0, 0, 0.1);
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        max-width: 1200px;
+        margin: 4rem auto 0;
+    }
+
+    .feature-card {
+        padding: 2.5rem;
+        text-align: center;
+    }
+
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(45deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+        border-radius: 20px;
+        margin: 0 auto 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+    }
+
+    .feature-card h3 {
+        color: white;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    footer {
+        padding: 3rem 5% 1rem;
+        text-align: center;
+        color: rgba(255,255,255,0.8);
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .social-links {
+        margin: 2rem 0;
+    }
+
+    .social-links a {
+        color: white;
+        font-size: 1.5rem;
+        margin: 0 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .social-links a:hover {
+        color: #ffd700;
+        transform: translateY(-3px);
+    }
+
+    @media (max-width: 768px) {
         .nav-links {
-            display: flex;
-            list-style: none;
-            gap: 2rem;
-        }
-
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .nav-links a:hover {
-            color: #ffd700;
-            transform: translateY(-2px);
-        }
-
-        .cta-button {
-            padding: 12px 30px;
-            background: linear-gradient(45deg, #ffd700, #ffed4e);
-            color: #333;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
-        }
-
-        .cta-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(255, 215, 0, 0.4);
-        }
-
-        .hero {
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            color: white;
-            position: relative;
-        }
-
-        .hero-content {
-            max-width: 800px;
-            padding: 0 2rem;
+            display: none;
         }
 
         .hero h1 {
-            font-size: 4rem;
-            margin-bottom: 1.5rem;
-            background: linear-gradient(45deg, #fff, #f0f0f0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero p {
-            font-size: 1.3rem;
-            margin-bottom: 2rem;
-            opacity: 0.9;
-        }
-
-        .products {
-            padding: 100px 5%;
-            max-width: 1400px;
-            margin: 0 auto;
+            font-size: 2.5rem;
         }
 
         .section-title {
-            text-align: center;
-            color: white;
-            font-size: 3rem;
-            margin-bottom: 4rem;
-        }
-
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2rem;
-        }
-
-        .product-card {
-            padding: 2rem;
-            text-align: center;
-            transition: all 0.4s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .product-card:hover {
-            transform: translateY(-20px) scale(1.02);
-        }
-
-        .product-image {
-            width: 120px;
-            height: 120px;
-            background: linear-gradient(45deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
-            border-radius: 50%;
-            margin: 0 auto 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            backdrop-filter: blur(10px);
-        }
-
-        .product-card h3 {
-            color: white;
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .product-card p {
-            color: rgba(255,255,255,0.8);
-            margin-bottom: 1.5rem;
-            line-height: 1.6;
-        }
-
-        .price {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #ffd700;
-            margin-bottom: 1rem;
-        }
-
-        .buy-btn {
-            padding: 15px 40px;
-            background: linear-gradient(45deg, #ffd700, #ffed4e);
-            color: #333;
-            border: none;
-            border-radius: 50px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
-        }
-
-        .buy-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(255, 215, 0, 0.4);
-        }
-
-        .features {
-            padding: 100px 5%;
-            background: rgba(0, 0, 0, 0.1);
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            max-width: 1200px;
-            margin: 4rem auto 0;
-        }
-
-        .feature-card {
-            padding: 2.5rem;
-            text-align: center;
-        }
-
-        .feature-icon {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(45deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
-            border-radius: 20px;
-            margin: 0 auto 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             font-size: 2rem;
         }
 
-        .feature-card h3 {
-            color: white;
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
+        .admin-panel {
+            width: 95%;
+            right: 2.5%;
+            left: 2.5%;
         }
 
-        footer {
-            padding: 3rem 5% 1rem;
-            text-align: center;
-            color: rgba(255,255,255,0.8);
-            border-top: 1px solid rgba(255,255,255,0.1);
+        .form-row {
+            grid-template-columns: 1fr;
         }
+    }
 
-        .social-links {
-            margin: 2rem 0;
-        }
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+    }
 
-        .social-links a {
-            color: white;
-            font-size: 1.5rem;
-            margin: 0 1rem;
-            transition: all 0.3s ease;
-        }
+    @keyframes shake {
+        0%,100%{transform:translateX(0)}
+        25%{transform:translateX(-5px)}
+        75%{transform:translateX(5px)}
+    }
 
-        .social-links a:hover {
-            color: #ffd700;
-            transform: translateY(-3px);
-        }
+    @keyframes slideIn {
+        from{transform:translateX(100%);opacity:0}
+        to{transform:translateX(0);opacity:1}
+    }
 
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-            }
+    .product-card:nth-child(1) { animation: float 6s ease-in-out infinite; }
+    .product-card:nth-child(2) { animation: float 6s ease-in-out infinite 1s; }
+    .product-card:nth-child(3) { animation: float 6s ease-in-out infinite 2s; }
+</style>
 
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-
-            .section-title {
-                font-size: 2rem;
-            }
-
-            .admin-panel {
-                width: 95%;
-                right: 2.5%;
-                left: 2.5%;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-        }
-
-        @keyframes shake {
-            0%,100%{transform:translateX(0)}
-            25%{transform:translateX(-5px)}
-            75%{transform:translateX(5px)}
-        }
-
-        @keyframes slideIn {
-            from{transform:translateX(100%);opacity:0}
-            to{transform:translateX(0);opacity:1}
-        }
-
-        .product-card:nth-child(1) { animation: float 6s ease-in-out infinite; }
-        .product-card:nth-child(2) { animation: float 6s ease-in-out infinite 1s; }
-        .product-card:nth-child(3) { animation: float 6s ease-in-out infinite 2s; }
-    </style>
 </head>
 <body>
     <!-- Admin Toggle Button -->
     <button class="admin-toggle" title="Admin Panel" onclick="toggleAdminModal()">⚙️</button>
-
+    
     <!-- Admin Login Modal -->
     <div id="adminModal" class="admin-modal">
         <div class="admin-container">
@@ -544,10 +589,20 @@
     <!-- Admin Panel -->
     <div id="adminPanel" class="admin-panel">
         <div class="admin-header">
-            <h3>🎛️ Admin Control Panel</h3>
+            <h3>🎛️ Admin Control Panel 
+                <span class="order-counter" id="orderCounter">(0 orders)</span>
+            </h3>
             <button class="close-panel" onclick="closeAdminPanel()">×</button>
         </div>
         
+        <!-- Orders Section -->
+        <div class="product-form" style="background: rgba(255, 71, 87, 0.1); border-left: 4px solid #ff4757;">
+            <h4>🛒 Recent Orders <span id="purchaseCount">(0)</span></h4>
+            <div id="purchaseAlerts" class="alert-list"></div>
+            <button class="save-btn" onclick="clearOrders()" style="margin-top: 1rem;">🗑️ Clear Orders</button>
+        </div>
+
+        <!-- Product Management -->
         <div class="product-form">
             <h4>Add/Edit Product</h4>
             <div class="form-group">
@@ -656,229 +711,317 @@
         </div>
     </footer>
 
-    <script>
-        // 🔥 Pusher Configuration - NO SERVER NEEDED!
-        const PUSHER_APP_KEY = '6291de89719e0ba9f19b';  // From Pusher dashboard
-        const PUSHER_CLUSTER = 'us2';                // Your cluster
-        const ADMIN_CODE = '123456';                 // Change this!
+<script>
+    // 🔥 FIXED CONFIGURATION - Orders sync across ALL tabs/sessions!
+    const PUSHER_APP_KEY = '6291de89719e0ba9f19b';
+    const PUSHER_CLUSTER = 'us2';
+    const ADMIN_CODE = '123456';
 
-        let pusher = null;
-        let channel = null;
-        let products = [
-            { icon: '📱', title: 'Smart Wireless Earbuds', desc: 'Premium noise-cancelling earbuds with 30-hour battery life and crystal clear sound.', price: '$129' },
-            { icon: '💻', title: 'Ultra Portable Laptop', desc: 'Lightning-fast performance in a sleek, lightweight design perfect for work and play.', price: '$999' },
-            { icon: '⌚', title: 'Smart Fitness Watch', desc: 'Track your health, fitness, and sleep with advanced sensors and AI insights.', price: '$249' },
-            { icon: '🎧', title: 'Over-Ear Headphones', desc: 'Immersive sound with active noise cancellation and 40-hour battery life.', price: '$199' },
-            { icon: '📷', title: '4K Action Camera', desc: 'Capture every moment in stunning 4K with waterproof design and stabilization.', price: '$349' },
-            { icon: '🔋', title: 'Power Bank 20,000mAh', desc: 'Fast charging power bank with multiple ports and LED display.', price: '$59' }
-        ];
+    let pusher = null;
+    let channel = null;
+    let products = [
+        { icon: '📱', title: 'Smart Wireless Earbuds', desc: 'Premium noise-cancelling earbuds with 30-hour battery life and crystal clear sound.', price: '$129' },
+        { icon: '💻', title: 'Ultra Portable Laptop', desc: 'Lightning-fast performance in a sleek, lightweight design perfect for work and play.', price: '$999' },
+        { icon: '⌚', title: 'Smart Fitness Watch', desc: 'Track your health, fitness, and sleep with advanced sensors and AI insights.', price: '$249' },
+        { icon: '🎧', title: 'Over-Ear Headphones', desc: 'Immersive sound with active noise cancellation and 40-hour battery life.', price: '$199' },
+        { icon: '📷', title: '4K Action Camera', desc: 'Capture every moment in stunning 4K with waterproof design and stabilization.', price: '$349' },
+        { icon: '🔋', title: 'Power Bank 20,000mAh', desc: 'Fast charging power bank with multiple ports and LED display.', price: '$59' }
+    ];
 
-        // 🔥 REAL-TIME PUSHER (works across ALL devices)
-        function initPusher() {
-            pusher = new Pusher(PUSHER_APP_KEY, {
-                cluster: PUSHER_CLUSTER,
-                forceTLS: true
-            });
-            
-            channel = pusher.subscribe('nexobox-admin');
-            
-            // Listen for updates from ANY admin
-            channel.bind('product-update', (data) => {
-                products = data.products;
-                renderProducts();
-                updateProductsList();
-                console.log('🔥 LIVE UPDATE from another device!');
-                showNotification('🔥 LIVE UPDATE from another device!');
-            });
-            
-            // Listen for deletions
-            channel.bind('product-delete', (data) => {
-                products = data.products;
-                renderProducts();
-                updateProductsList();
-                console.log('🗑️ LIVE DELETE from another device!');
-                showNotification('🗑️ LIVE DELETE from another device!');
-            });
-            
-            console.log('✅ Pusher connected - Real-time sync enabled!');
+    let orders = []; // 🔥 Track ALL orders
+    let isAdminPanelOpen = false; // 🔥 Track admin panel state
+
+    // 🔥 FIXED: Broadcast to ALL tabs including current one
+    function broadcastOrder(orderData) {
+        // 1. Update local storage (triggers storage event across tabs)
+        const existingOrders = JSON.parse(localStorage.getItem('nexobox_orders') || '[]');
+        existingOrders.unshift(orderData);
+        if (existingOrders.length > 50) {
+            existingOrders.length = 50;
         }
+        localStorage.setItem('nexobox_orders', JSON.stringify(existingOrders));
+        
+        // 2. Trigger Pusher for other tabs/sessions
+        if (channel) {
+            channel.trigger('client-purchase-alert', orderData);
+        }
+        
+        console.log('🔥 BROADCAST ORDER:', orderData);
+    }
 
-        // BROADCAST changes to ALL devices
-        function broadcastUpdate(type, data) {
-            if (channel) {
-                channel.trigger(`client-${type}`, data);
-                console.log(`📡 Broadcast ${type}:`, data);
+    // 🔥 FIXED: Listen for storage events from OTHER tabs
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'nexobox_orders') {
+            const newOrders = JSON.parse(e.newValue || '[]');
+            orders = newOrders;
+            if (isAdminPanelOpen) {
+                renderOrders();
+                updateOrderCounter();
+            }
+            console.log('📱 STORAGE EVENT: Orders synced from another tab!');
+        }
+    });
+
+    // 🔥 FIXED: Pusher initializes IMMEDIATELY
+    function initPusher() {
+        if (pusher) return;
+        
+        pusher = new Pusher(PUSHER_APP_KEY, {
+            cluster: PUSHER_CLUSTER,
+            forceTLS: true
+        });
+        
+        channel = pusher.subscribe('nexobox-admin');
+        
+        // 🔥 Listen for Pusher events from OTHER tabs/sessions
+        channel.bind('client-purchase-alert', (data) => {
+            // Only add if not already in orders (prevents duplicates)
+            const exists = orders.some(order => order.timestamp === data.timestamp);
+            if (!exists) {
+                orders.unshift(data);
+                if (orders.length > 50) orders.length = 50;
+                if (isAdminPanelOpen) {
+                    renderOrders();
+                    updateOrderCounter();
+                }
+            }
+            console.log('🛒 PUSHER ORDER:', data);
+        });
+
+        loadOrders();
+        console.log('✅ Pusher + Storage Events ready - Orders sync across ALL tabs!');
+    }
+
+    // 🔥 Load orders from localStorage
+    function loadOrders() {
+        const saved = localStorage.getItem('nexobox_orders');
+        if (saved) {
+            orders = JSON.parse(saved);
+            if (isAdminPanelOpen) {
+                renderOrders();
             }
         }
+    }
 
-        // Save with REAL-TIME sync
-        async function saveProduct() {
-            const icon = document.getElementById('productIcon').value || '📱';
-            const title = document.getElementById('productTitle').value;
-            const desc = document.getElementById('productDesc').value;
-            const price = document.getElementById('productPrice').value;
-            const position = parseInt(document.getElementById('productPosition').value);
+    // 🔥 Render orders in admin panel
+    function renderOrders() {
+        const container = document.getElementById('purchaseAlerts');
+        if (!container) return;
+        
+        container.innerHTML = orders.map(order => `
+            <div class="alert-item purchase-alert">
+                <div class="alert-time">${order.timestamp}</div>
+                <strong>🛒 ${order.product}</strong> 
+                <span style="color:#ffd700;float:right;font-weight:bold;">${order.price}</span>
+                <br><small>${order.ip} • ${order.userAgent}</small>
+            </div>
+        `).join('');
+        
+        document.getElementById('purchaseCount').textContent = `(${orders.length})`;
+        updateOrderCounter();
+    }
 
-            if (!title || !desc || !price) {
-                alert('❌ Fill all fields!');
-                return;
-            }
+    function updateOrderCounter() {
+        const counter = document.getElementById('orderCounter');
+        if (counter) counter.textContent = `(${orders.length} orders)`;
+    }
 
-            // Update product
-            products[position] = { icon, title, desc, price };
-            
-            // 🔥 BROADCAST to ALL devices instantly
-            broadcastUpdate('product-update', { products });
-            
-            renderProducts();
-            updateProductsList();
-            clearForm();
-            
-            showNotification('✅ SAVED & SYNCED TO ALL DEVICES!');
+    // 🔥 FIXED: Buy button - works in ALL tabs!
+    function sendPurchaseAlert(productTitle, productPrice) {
+        const orderData = {
+            timestamp: new Date().toLocaleString(),
+            product: productTitle,
+            price: productPrice,
+            ip: 'Live Customer',
+            userAgent: navigator.userAgent.slice(0, 50) + '...'
+        };
+        
+        // 🔥 Broadcast to ALL tabs (including current one via storage event)
+        broadcastOrder(orderData);
+    }
+
+    function clearOrders() {
+        if (confirm('Clear all orders?')) {
+            orders = [];
+            localStorage.removeItem('nexobox_orders');
+            renderOrders();
+            showNotification('🗑️ All orders cleared!');
+        }
+    }
+
+    // 🔥 FIXED: Admin panel state tracking
+    function openAdminPanel() {
+        isAdminPanelOpen = true;
+        document.getElementById('adminPanel').classList.add('active');
+        renderOrders();
+        updateProductsList();
+        updateOrderCounter();
+        showNotification('🔓 Admin + Live Orders Active!');
+    }
+
+    function closeAdminPanel() { 
+        isAdminPanelOpen = false;
+        document.getElementById('adminPanel').classList.remove('active'); 
+    }
+
+    // Product management functions
+    async function saveProduct() {
+        const icon = document.getElementById('productIcon').value || '📱';
+        const title = document.getElementById('productTitle').value;
+        const desc = document.getElementById('productDesc').value;
+        const price = document.getElementById('productPrice').value;
+        const position = parseInt(document.getElementById('productPosition').value);
+
+        if (!title || !desc || !price) {
+            alert('❌ Fill all fields!');
+            return;
         }
 
-        // Delete with REAL-TIME sync
-        function deleteProduct(index) {
-            if (!confirm('🗑️ Delete this product? (Syncs everywhere!)')) return;
-            
-            products.splice(index, 1);
-            products.push({ icon: '➖', title: 'Empty Slot', desc: 'Add new product here', price: '$0' });
-            
-            // 🔥 BROADCAST deletion to ALL devices
-            broadcastUpdate('product-delete', { products });
-            
-            renderProducts();
-            updateProductsList();
-            showNotification('🗑️ DELETED & SYNCED EVERYWHERE!');
-        }
+        products[position] = { icon, title, desc, price };
+        renderProducts();
+        updateProductsList();
+        clearForm();
+        showNotification('✅ Product saved!');
+    }
 
-        // Render products to page
-        function renderProducts() {
-            const grid = document.getElementById('productsGrid');
-            grid.innerHTML = '';
-            
-            products.forEach((product, index) => {
-                const card = document.createElement('div');
-                card.className = 'product-card glass';
-                card.dataset.index = index;
-                card.innerHTML = `
-                    <div class="product-image">${product.icon}</div>
-                    <h3>${product.title}</h3>
-                    <p>${product.desc}</p>
-                    <div class="price">${product.price}</div>
-                    <button class="buy-btn">Add to Cart</button>
-                `;
-                grid.appendChild(card);
-            });
-            
-            attachBuyButtons();
-        }
+    function deleteProduct(index) {
+        if (!confirm('🗑️ Delete this product?')) return;
+        products.splice(index, 1);
+        products.push({ icon: '➖', title: 'Empty Slot', desc: 'Add new product here', price: '$0' });
+        renderProducts();
+        updateProductsList();
+        showNotification('🗑️ Product deleted!');
+    }
 
-        // Update admin list
-        function updateProductsList() {
-            const list = document.getElementById('productsList');
-            list.innerHTML = products.map((p, i) => `
-                <div class="product-item">
-                    <strong>${p.icon} ${p.title}</strong> 
-                    <span style="float:left;color:#28a745;">${p.price}</span>
-                    <button class="delete-btn" onclick="deleteProduct(${i})">🗑️</button>
-                    <br><small>${p.desc.substring(0,50)}...</small>
-                </div>
-            `).join('');
-        }
-
-        // Clear form
-        function clearForm() {
-            document.querySelectorAll('.product-form input, .product-form textarea').forEach(el => el.value = '');
-            document.getElementById('productIcon').value = '📱';
-        }
-
-        // Admin functions
-        function toggleAdminModal() { document.getElementById('adminModal').classList.toggle('active'); }
-        function closeAdminModal() { document.getElementById('adminModal').classList.remove('active'); }
-        function closeAdminPanel() { document.getElementById('adminPanel').classList.remove('active'); }
-
-        function checkAdminCode() {
-            const code = document.getElementById('adminCode').value;
-            if (code === ADMIN_CODE) {
-                closeAdminModal();
-                document.getElementById('adminPanel').classList.add('active');
-                initPusher();  // 🔥 Start real-time sync
-                updateProductsList();
-                showNotification('🔓 Admin + Real-time sync enabled!');
-            } else {
-                shakeInput();
-                document.getElementById('adminCode').value = '';
-            }
-        }
-
-        // Visual feedback
-        function shakeInput() {
-            const input = document.getElementById('adminCode');
-            input.style.animation = 'shake 0.5s';
-            setTimeout(() => input.style.animation = '', 500);
-        }
-
-        // Notification
-        function showNotification(msg) {
-            const notif = document.createElement('div');
-            notif.textContent = msg;
-            notif.style.cssText = `
-                position:fixed;top:100px;right:20px;
-                background:linear-gradient(45deg,#28a745,#20c997);
-                color:white;padding:15px 25px;border-radius:10px;
-                box-shadow:0 10px 30px rgba(40,167,69,.4);
-                z-index:9999;font-weight:bold;
-                animation:slideIn 0.3s ease;
+    function renderProducts() {
+        const grid = document.getElementById('productsGrid');
+        grid.innerHTML = '';
+        
+        products.forEach((product, index) => {
+            const card = document.createElement('div');
+            card.className = 'product-card glass';
+            card.dataset.index = index;
+            card.innerHTML = `
+                <div class="product-image">${product.icon}</div>
+                <h3>${product.title}</h3>
+                <p>${product.desc}</p>
+                <div class="price">${product.price}</div>
+                <button class="buy-btn" data-product="${product.title}" data-price="${product.price}">Add to Cart</button>
             `;
-            document.body.appendChild(notif);
-            setTimeout(() => notif.remove(), 3000);
-        }
+            grid.appendChild(card);
+        });
+        
+        attachBuyButtons();
+    }
 
-        // Buy buttons
-        function attachBuyButtons() {
-            document.querySelectorAll('.buy-btn').forEach(btn => {
-                btn.onclick = () => {
-                    btn.textContent = 'Added! 🎉';
-                    btn.style.background = 'linear-gradient(45deg,#28a745,#20c997)';
-                    setTimeout(() => {
-                        btn.textContent = 'Add to Cart';
-                        btn.style.background = 'linear-gradient(45deg,#ffd700,#ffed4e)';
-                    }, 2000);
-                };
-            });
-        }
+    function updateProductsList() {
+        const list = document.getElementById('productsList');
+        list.innerHTML = products.map((p, i) => `
+            <div class="product-item">
+                <strong>${p.icon} ${p.title}</strong> 
+                <span style="float:left;color:#28a745;">${p.price}</span>
+                <button class="delete-btn" onclick="deleteProduct(${i})">🗑️</button>
+                <br><small>${p.desc.substring(0,50)}...</small>
+            </div>
+        `).join('');
+    }
 
-        // Init
-        document.addEventListener('DOMContentLoaded', () => {
-            renderProducts();
-            attachBuyButtons();
-            
-            // Enter key login
-            document.getElementById('adminCode').onkeypress = (e) => {
-                if (e.key === 'Enter') checkAdminCode();
+    function clearForm() {
+        document.querySelectorAll('.product-form input, .product-form textarea').forEach(el => el.value = '');
+        document.getElementById('productIcon').value = '📱';
+    }
+
+    // Admin UI functions
+    function toggleAdminModal() { 
+        document.getElementById('adminModal').classList.toggle('active'); 
+    }
+    
+    function closeAdminModal() { 
+        document.getElementById('adminModal').classList.remove('active'); 
+    }
+
+    function checkAdminCode() {
+        const code = document.getElementById('adminCode').value;
+        if (code === ADMIN_CODE) {
+            closeAdminModal();
+            openAdminPanel(); // 🔥 Use fixed function
+        } else {
+            shakeInput();
+            document.getElementById('adminCode').value = '';
+        }
+    }
+
+    function shakeInput() {
+        const input = document.getElementById('adminCode');
+        input.style.animation = 'shake 0.5s';
+        setTimeout(() => input.style.animation = '', 500);
+    }
+
+    function showNotification(msg) {
+        const notif = document.createElement('div');
+        notif.textContent = msg;
+        notif.style.cssText = `
+            position:fixed;top:100px;right:20px;
+            background:linear-gradient(45deg,#28a745,#20c997);
+            color:white;padding:15px 25px;border-radius:10px;
+            box-shadow:0 10px 30px rgba(40,167,69,.4);
+            z-index:9999;font-weight:bold;
+            animation:slideIn 0.3s ease;
+        `;
+        document.body.appendChild(notif);
+        setTimeout(() => notif.remove(), 3000);
+    }
+
+    // 🔥 FIXED: Buy buttons work across ALL tabs
+    function attachBuyButtons() {
+        document.querySelectorAll('.buy-btn').forEach(btn => {
+            btn.onclick = () => {
+                const productTitle = btn.dataset.product;
+                const productPrice = btn.dataset.price;
+                
+                sendPurchaseAlert(productTitle, productPrice);
+                
+                btn.textContent = 'Ordered! 🎉';
+                btn.style.background = 'linear-gradient(45deg,#28a745,#20c997)';
+                setTimeout(() => {
+                    btn.textContent = 'Add to Cart';
+                    btn.style.background = 'linear-gradient(45deg,#ffd700,#ffed4e)';
+                }, 2000);
             };
         });
+    }
 
-        // Smooth scrolling for navigation links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
+    // 🔥 CRITICAL: Initialize everything
+    document.addEventListener('DOMContentLoaded', () => {
+        initPusher();
+        renderProducts();
+        attachBuyButtons();
+        
+        document.getElementById('adminCode').onkeypress = (e) => {
+            if (e.key === 'Enter') checkAdminCode();
+        };
+    });
+
+    // Smooth scrolling
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.querySelector(this.getAttribute('href')).scrollIntoView({
+                behavior: 'smooth'
             });
         });
+    });
 
-        // Header scroll effect
-        window.addEventListener('scroll', () => {
-            const header = document.querySelector('header');
-            if (window.scrollY > 100) {
-                header.style.background = 'rgba(255, 255, 255, 0.15)';
-            } else {
-                header.style.background = 'rgba(255, 255, 255, 0.1)';
-            }
-        });
-    </script>
+    // Header scroll effect
+    window.addEventListener('scroll', () => {
+        const header = document.querySelector('header');
+        if (window.scrollY > 100) {
+            header.style.background = 'rgba(255, 255, 255, 0.15)';
+        } else {
+            header.style.background = 'rgba(255, 255, 255, 0.1)';
+        }
+    });
+</script>
+
 </body>
 </html>
