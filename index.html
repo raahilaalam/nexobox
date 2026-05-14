@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexobox - Premium Products for Modern Living</title>
-    <!-- Supabase JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Pusher JS -->
+    <script src="https://js.pusher.com/8.2/pusher.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -903,384 +903,398 @@
     </footer>
 
 <script>
-    // ⚡ SUPABASE CONFIGURATION - Replace with your credentials
-    const SUPABASE_URL = 'https://epdwpdznhbdplrdbeucd.supabase.co'; // e.g., https://abc123.supabase.co
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVwZHdwZHpuaGJkcGxyZGJldWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NzIyNTgsImV4cCI6MjA5NDM0ODI1OH0.XcEc56E4_vl2DjFIH29m-hZYJY3GXLZv6x9BDdKX1xA'; // e.g., eyJhbGc...
+    // 🔥 FIXED CONFIGURATION - Orders sync across ALL tabs/sessions!
+    const PUSHER_APP_KEY = '6291de89719e0ba9f19b';
+    const PUSHER_CLUSTER = 'us2';
     const ADMIN_CODE = '123456';
 
-    let supabase = null;
-    let currentProduct = null;
-    let orders = [];
-    let products = [];
-    let isAdminPanelOpen = false;
-    let currentOrderIndex = -1;
-    let ordersSubscription = null;
-    let productsSubscription = null;
+    let pusher = null;
+    let channel = null;
+    let products = [
+        { icon: '🧊', title: 'Nee-Doh Nice Cube', desc: 'Squish this toy like a dream. This is on limited time offer: $10 off', price: '$30' },
+        { icon: '🧈', title: 'Butter Squishy', desc: 'Squish this butter whenever you want.', price: '$25' },
+        { icon: '🥟', title: 'Dumpling Squishy', desc: 'This soft squishy is on a $10 off sale. Buy it now', price: '$20' },
+        { icon: '🎧', title: 'Over-Ear Headphones', desc: 'Immersive sound with active noise cancellation and 40-hour battery life.', price: '$199' },
+        { icon: '📷', title: '4K Action Camera', desc: 'Capture every moment in stunning 4K with waterproof design and stabilization.', price: '$349' },
+        { icon: '🔋', title: 'Power Bank 20,000mAh', desc: 'Fast charging power bank with multiple ports and LED display.', price: '$59' }
+    ];
 
-    // Initialize Supabase
-    function initSupabase() {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log('✅ Supabase initialized');
+    let orders = []; // 🔥 Track ALL orders
+    let isAdminPanelOpen = false; // 🔥 Track admin panel state
+    let currentOrderIndex = -1; // Track currently viewed order
+
+    // 🔥 FIXED: Broadcast to ALL tabs including current one
+    function broadcastOrder(orderData) {
+        // 1. Update local storage (triggers storage event across tabs)
+        const existingOrders = JSON.parse(localStorage.getItem('nexobox_orders') || '[]');
+        existingOrders.unshift(orderData);
+        if (existingOrders.length > 50) {
+            existingOrders.length = 50;
+        }
+        localStorage.setItem('nexobox_orders', JSON.stringify(existingOrders));
         
-        loadProducts();
-        setupRealtimeSubscriptions();
+        // 2. Trigger Pusher for other tabs/sessions
+        if (channel) {
+            channel.trigger('client-purchase-alert', orderData);
+        }
+        
+        console.log('🔥 BROADCAST ORDER:', orderData);
     }
 
-    // Setup real-time subscriptions
-    function setupRealtimeSubscriptions() {
-        // Subscribe to orders table changes
-        ordersSubscription = supabase
-            .channel('public:orders')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, payload => {
-                console.log('🔄 Order change detected:', payload);
-                loadOrders();
-            })
-            .subscribe();
-
-        // Subscribe to products table changes
-        productsSubscription = supabase
-            .channel('public:products')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, payload => {
-                console.log('🔄 Product change detected:', payload);
-                loadProducts();
-                renderProducts();
-            })
-            .subscribe();
-
-        loadOrders();
-    }
-
-    // Load orders from Supabase
-    async function loadOrders() {
-        try {
-            const { data, error } = await supabase
-                .from('orders')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(50);
-
-            if (error) throw error;
-
-            orders = data || [];
-            console.log('📦 Loaded orders:', orders.length);
-            
+    // 🔥 FIXED: Listen for storage events from OTHER tabs
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'nexobox_orders') {
+            const newOrders = JSON.parse(e.newValue || '[]');
+            orders = newOrders;
             if (isAdminPanelOpen) {
                 renderOrders();
                 updateOrderCounter();
             }
-        } catch (error) {
-            console.error('❌ Error loading orders:', error);
+            console.log('📱 STORAGE EVENT: Orders synced from another tab!');
         }
-    }
+    });
 
-    // Load products from Supabase
-    async function loadProducts() {
-        try {
-            const { data, error } = await supabase
-                .from('products')
-                .select('*')
-                .order('position', { ascending: true });
-
-            if (error) throw error;
-
-            products = data || [];
-            console.log('📦 Loaded products:', products.length);
-            renderProducts();
-        } catch (error) {
-            console.error('❌ Error loading products:', error);
-        }
-    }
-
-    // Render products in grid
-    function renderProducts() {
-        const grid = document.getElementById('productsGrid');
-        grid.innerHTML = '';
-
-        products.forEach(product => {
-            const card = document.createElement('div');
-            card.className = 'product-card glass';
-            card.innerHTML = `
-                <div class="product-image">${product.icon}</div>
-                <h3>${product.title}</h3>
-                <p>${product.description}</p>
-                <div class="price">${product.price}</div>
-                <button class="buy-btn" onclick="selectProduct(${products.indexOf(product)})">Buy Now</button>
-            `;
-            grid.appendChild(card);
+    // 🔥 FIXED: Pusher initializes IMMEDIATELY
+    function initPusher() {
+        if (pusher) return;
+        
+        pusher = new Pusher(PUSHER_APP_KEY, {
+            cluster: PUSHER_CLUSTER,
+            forceTLS: true
         });
+        
+        channel = pusher.subscribe('nexobox-admin');
+        
+        // 🔥 Listen for Pusher events from OTHER tabs/sessions
+        channel.bind('client-purchase-alert', (data) => {
+            // Only add if not already in orders (prevents duplicates)
+            const exists = orders.some(order => order.timestamp === data.timestamp);
+            if (!exists) {
+                orders.unshift(data);
+                if (orders.length > 50) orders.length = 50;
+                if (isAdminPanelOpen) {
+                    renderOrders();
+                    updateOrderCounter();
+                }
+            }
+            console.log('🛒 PUSHER ORDER:', data);
+        });
+
+        loadOrders();
+        console.log('✅ Pusher + Storage Events ready - Orders sync across ALL tabs!');
     }
 
-    // Render orders in admin panel
+    // 🔥 Load orders from localStorage
+    function loadOrders() {
+        const saved = localStorage.getItem('nexobox_orders');
+        if (saved) {
+            orders = JSON.parse(saved);
+            if (isAdminPanelOpen) {
+                renderOrders();
+            }
+        }
+    }
+
+    // 🔥 Render orders in admin panel
     function renderOrders() {
         const container = document.getElementById('purchaseAlerts');
-        container.innerHTML = '';
-
-        if (orders.length === 0) {
-            container.innerHTML = '<p style="color: #999; text-align: center;">No orders yet</p>';
-            return;
-        }
-
-        orders.forEach((order, index) => {
-            const date = new Date(order.created_at).toLocaleString();
-            const item = document.createElement('div');
-            item.className = 'alert-item purchase-alert';
-            item.innerHTML = `
-                <div class="alert-time">${date}</div>
-                <strong>${order.customer_name}</strong><br>
-                <small>${order.product_title} - ${order.product_price}</small>
-            `;
-            item.onclick = () => showCustomerDetails(index);
-            container.appendChild(item);
-        });
-    }
-
-    // Update order counter
-    function updateOrderCounter() {
+        if (!container) return;
+        
+        container.innerHTML = orders.map((order, index) => `
+            <div class="alert-item purchase-alert" onclick="viewOrderDetails(${index})">
+                <div class="alert-time">${order.timestamp}</div>
+                <strong>🛒 ${order.product}</strong> 
+                <span style="color:#ffd700;float:right;font-weight:bold;">${order.price}</span>
+                <br><small>${order.customerName || 'No info'}</small>
+            </div>
+        `).join('');
+        
         document.getElementById('purchaseCount').textContent = `(${orders.length})`;
-        document.getElementById('orderCounter').textContent = `(${orders.length} orders)`;
+        updateOrderCounter();
     }
 
-    // Show customer details
-    function showCustomerDetails(index) {
+    function updateOrderCounter() {
+        const counter = document.getElementById('orderCounter');
+        if (counter) counter.textContent = `(${orders.length} orders)`;
+    }
+
+    // View order details
+    function viewOrderDetails(index) {
         currentOrderIndex = index;
         const order = orders[index];
-        const content = document.getElementById('customerDetailsContent');
-
-        content.innerHTML = `
+        
+        const detailsContent = document.getElementById('customerDetailsContent');
+        detailsContent.innerHTML = `
             <div class="detail-row">
-                <div class="detail-label">Name</div>
-                <div class="detail-value">${order.customer_name}</div>
+                <div class="detail-label">📦 Product</div>
+                <div class="detail-value">${order.product}</div>
             </div>
             <div class="detail-row">
-                <div class="detail-label">Email</div>
-                <div class="detail-value">${order.customer_email}</div>
+                <div class="detail-label">💰 Price</div>
+                <div class="detail-value">${order.price}</div>
             </div>
             <div class="detail-row">
-                <div class="detail-label">Phone</div>
-                <div class="detail-value">${order.customer_phone}</div>
+                <div class="detail-label">📅 Timestamp</div>
+                <div class="detail-value">${order.timestamp}</div>
             </div>
             <div class="detail-row">
-                <div class="detail-label">Address</div>
-                <div class="detail-value">${order.customer_address}</div>
+                <div class="detail-label">👤 Customer Name</div>
+                <div class="detail-value">${order.customerName || 'Not provided'}</div>
             </div>
             <div class="detail-row">
-                <div class="detail-label">Product</div>
-                <div class="detail-value">${order.product_title}</div>
+                <div class="detail-label">📧 Email</div>
+                <div class="detail-value">${order.customerEmail || 'Not provided'}</div>
             </div>
             <div class="detail-row">
-                <div class="detail-label">Price</div>
-                <div class="detail-value">${order.product_price}</div>
+                <div class="detail-label">📞 Phone</div>
+                <div class="detail-value">${order.customerPhone || 'Not provided'}</div>
             </div>
             <div class="detail-row">
-                <div class="detail-label">Order Date</div>
-                <div class="detail-value">${new Date(order.created_at).toLocaleString()}</div>
+                <div class="detail-label">📍 Address</div>
+                <div class="detail-value">${order.customerAddress || 'Not provided'}</div>
             </div>
         `;
-
+        
         document.getElementById('customerDetailsModal').classList.add('active');
     }
 
-    // Close customer details
     function closeCustomerDetails() {
         document.getElementById('customerDetailsModal').classList.remove('active');
     }
 
-    // Select product for purchase
-    function selectProduct(index) {
-        currentProduct = products[index];
+    // Customer form functions
+    function openCustomerForm(productTitle, productPrice) {
+        // Store the product info temporarily
+        window.currentProduct = { title: productTitle, price: productPrice };
         document.getElementById('customerFormModal').classList.add('active');
     }
 
-    // Submit customer info and create order
-    async function submitCustomerInfo() {
-        const name = document.getElementById('customerName').value;
-        const email = document.getElementById('customerEmail').value;
-        const phone = document.getElementById('customerPhone').value;
-        const address = document.getElementById('customerAddress').value;
-
-        if (!name || !email || !phone || !address) {
-            alert('Please fill in all fields');
-            return;
-        }
-
-        try {
-            const { data, error } = await supabase
-                .from('orders')
-                .insert([{
-                    customer_name: name,
-                    customer_email: email,
-                    customer_phone: phone,
-                    customer_address: address,
-                    product_title: currentProduct.title,
-                    product_price: currentProduct.price
-                }]);
-
-            if (error) throw error;
-
-            console.log('✅ Order created:', data);
-            
-            // Clear form
-            document.getElementById('customerName').value = '';
-            document.getElementById('customerEmail').value = '';
-            document.getElementById('customerPhone').value = '';
-            document.getElementById('customerAddress').value = '';
-            
-            closeCustomerForm();
-            alert('✅ Order placed successfully! Thank you for your purchase.');
-        } catch (error) {
-            console.error('❌ Error creating order:', error);
-            alert('Error placing order. Please try again.');
-        }
-    }
-
-    // Close customer form
     function closeCustomerForm() {
         document.getElementById('customerFormModal').classList.remove('active');
     }
 
-    // Admin functions
-    function toggleAdminModal() {
-        const modal = document.getElementById('adminModal');
-        modal.classList.toggle('active');
+    function submitCustomerInfo() {
+        const name = document.getElementById('customerName').value.trim();
+        const email = document.getElementById('customerEmail').value.trim();
+        const phone = document.getElementById('customerPhone').value.trim();
+        const address = document.getElementById('customerAddress').value.trim();
+
+        if (!name || !email || !phone || !address) {
+            alert('❌ Please fill in all fields!');
+            return;
+        }
+
+        if (!validateEmail(email)) {
+            alert('❌ Please enter a valid email address!');
+            return;
+        }
+
+        if (!validatePhone(phone)) {
+            alert('❌ Please enter a valid phone number!');
+            return;
+        }
+
+        const orderData = {
+            timestamp: new Date().toLocaleString(),
+            product: window.currentProduct.title,
+            price: window.currentProduct.price,
+            customerName: name,
+            customerEmail: email,
+            customerPhone: phone,
+            customerAddress: address,
+            ip: 'Live Customer',
+            userAgent: navigator.userAgent.slice(0, 50) + '...'
+        };
+
+        broadcastOrder(orderData);
+        
+        // Clear form
+        document.getElementById('customerName').value = '';
+        document.getElementById('customerEmail').value = '';
+        document.getElementById('customerPhone').value = '';
+        document.getElementById('customerAddress').value = '';
+
+        closeCustomerForm();
+        showNotification('✅ Order placed successfully!');
     }
 
-    function closeAdminModal() {
-        document.getElementById('adminModal').classList.remove('active');
-        document.getElementById('adminCode').value = '';
+    function validateEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    function validatePhone(phone) {
+        const phoneRegex = /^[\d\s\-\+\(\)]{10,}$/;
+        return phoneRegex.test(phone.replace(/\s/g, ''));
+    }
+
+    // 🔥 FIXED: Buy button - works in ALL tabs!
+    function sendPurchaseAlert(productTitle, productPrice) {
+        openCustomerForm(productTitle, productPrice);
+    }
+
+    function clearOrders() {
+        if (confirm('Clear all orders?')) {
+            orders = [];
+            localStorage.removeItem('nexobox_orders');
+            renderOrders();
+            showNotification('🗑️ All orders cleared!');
+        }
+    }
+
+    // 🔥 FIXED: Admin panel state tracking
+    function openAdminPanel() {
+        isAdminPanelOpen = true;
+        document.getElementById('adminPanel').classList.add('active');
+        renderOrders();
+        updateProductsList();
+        updateOrderCounter();
+        showNotification('🔓 Admin + Live Orders Active!');
+    }
+
+    function closeAdminPanel() { 
+        isAdminPanelOpen = false;
+        document.getElementById('adminPanel').classList.remove('active'); 
+    }
+
+    // Product management functions
+    async function saveProduct() {
+        const icon = document.getElementById('productIcon').value || '📱';
+        const title = document.getElementById('productTitle').value;
+        const desc = document.getElementById('productDesc').value;
+        const price = document.getElementById('productPrice').value;
+        const position = parseInt(document.getElementById('productPosition').value);
+
+        if (!title || !desc || !price) {
+            alert('❌ Fill all fields!');
+            return;
+        }
+
+        products[position] = { icon, title, desc, price };
+        renderProducts();
+        updateProductsList();
+        clearForm();
+        showNotification('✅ Product saved!');
+    }
+
+    function deleteProduct(index) {
+        if (!confirm('🗑️ Delete this product?')) return;
+        products.splice(index, 1);
+        products.push({ icon: '➖', title: 'Empty Slot', desc: 'Add new product here', price: '$0' });
+        renderProducts();
+        updateProductsList();
+        showNotification('🗑️ Product deleted!');
+    }
+
+    function renderProducts() {
+        const grid = document.getElementById('productsGrid');
+        grid.innerHTML = '';
+        
+        products.forEach((product, index) => {
+            const card = document.createElement('div');
+            card.className = 'product-card glass';
+            card.dataset.index = index;
+            card.innerHTML = `
+                <div class="product-image">${product.icon}</div>
+                <h3>${product.title}</h3>
+                <p>${product.desc}</p>
+                <div class="price">${product.price}</div>
+                <button class="buy-btn" data-product="${product.title}" data-price="${product.price}">Add to Cart</button>
+            `;
+            grid.appendChild(card);
+        });
+        
+        attachBuyButtons();
+    }
+
+    function updateProductsList() {
+        const list = document.getElementById('productsList');
+        list.innerHTML = products.map((p, i) => `
+            <div class="product-item">
+                <strong>${p.icon} ${p.title}</strong> 
+                <span style="float:left;color:#28a745;">${p.price}</span>
+                <button class="delete-btn" onclick="deleteProduct(${i})">🗑️</button>
+                <br><small>${p.desc.substring(0,50)}...</small>
+            </div>
+        `).join('');
+    }
+
+    function clearForm() {
+        document.querySelectorAll('.product-form input, .product-form textarea').forEach(el => el.value = '');
+        document.getElementById('productIcon').value = '📱';
+    }
+
+    // Admin UI functions
+    function toggleAdminModal() { 
+        document.getElementById('adminModal').classList.toggle('active'); 
+    }
+    
+    function closeAdminModal() { 
+        document.getElementById('adminModal').classList.remove('active'); 
     }
 
     function checkAdminCode() {
         const code = document.getElementById('adminCode').value;
         if (code === ADMIN_CODE) {
             closeAdminModal();
-            document.getElementById('adminPanel').classList.add('active');
-            isAdminPanelOpen = true;
-            loadOrders();
-            renderOrders();
-            updateOrderCounter();
-            loadProductsList();
+            openAdminPanel();
         } else {
-            alert('❌ Invalid admin code');
+            shakeInput();
+            document.getElementById('adminCode').value = '';
         }
     }
 
-    // Close admin panel
-    function closeAdminPanel() {
-        document.getElementById('adminPanel').classList.remove('active');
-        isAdminPanelOpen = false;
+    function shakeInput() {
+        const input = document.getElementById('adminCode');
+        input.style.animation = 'shake 0.5s';
+        setTimeout(() => input.style.animation = '', 500);
     }
 
-    // Save product to Supabase
-    async function saveProduct() {
-        const icon = document.getElementById('productIcon').value;
-        const title = document.getElementById('productTitle').value;
-        const desc = document.getElementById('productDesc').value;
-        const price = document.getElementById('productPrice').value;
-        const position = parseInt(document.getElementById('productPosition').value);
-
-        if (!icon || !title || !desc || !price) {
-            alert('Please fill in all fields');
-            return;
-        }
-
-        try {
-            if (currentProduct && currentProduct.id) {
-                // Update existing product
-                const { error } = await supabase
-                    .from('products')
-                    .update({ icon, title, description: desc, price, position })
-                    .eq('id', currentProduct.id);
-
-                if (error) throw error;
-                console.log('✅ Product updated');
-            } else {
-                // Create new product
-                const { error } = await supabase
-                    .from('products')
-                    .insert([{ icon, title, description: desc, price, position }]);
-
-                if (error) throw error;
-                console.log('✅ Product created');
-            }
-
-            // Clear form
-            document.getElementById('productIcon').value = '📱';
-            document.getElementById('productTitle').value = '';
-            document.getElementById('productDesc').value = '';
-            document.getElementById('productPrice').value = '';
-            document.getElementById('productPosition').value = '0';
-            currentProduct = null;
-
-            loadProducts();
-            loadProductsList();
-        } catch (error) {
-            console.error('❌ Error saving product:', error);
-            alert('Error saving product');
-        }
+    function showNotification(msg) {
+        const notif = document.createElement('div');
+        notif.textContent = msg;
+        notif.style.cssText = `
+            position:fixed;top:100px;right:20px;
+            background:linear-gradient(45deg,#28a745,#20c997);
+            color:white;padding:15px 25px;border-radius:10px;
+            box-shadow:0 10px 30px rgba(40,167,69,.4);
+            z-index:9999;font-weight:bold;
+            animation:slideIn 0.3s ease;
+        `;
+        document.body.appendChild(notif);
+        setTimeout(() => notif.remove(), 3000);
     }
 
-    // Load products list in admin
-    async function loadProductsList() {
-        const container = document.getElementById('productsList');
-        container.innerHTML = '';
-
-        products.forEach(product => {
-            const item = document.createElement('div');
-            item.className = 'product-item';
-            item.innerHTML = `
-                <button class="delete-btn" onclick="deleteProduct('${product.id}')">🗑️</button>
-                <strong>${product.icon} ${product.title}</strong><br>
-                <small>${product.price}</small>
-            `;
-            container.appendChild(item);
+    // 🔥 FIXED: Buy buttons work across ALL tabs
+    function attachBuyButtons() {
+        document.querySelectorAll('.buy-btn').forEach(btn => {
+            btn.onclick = () => {
+                const productTitle = btn.dataset.product;
+                const productPrice = btn.dataset.price;
+                
+                sendPurchaseAlert(productTitle, productPrice);
+                
+                btn.textContent = 'Opening form... 📝';
+                btn.style.background = 'linear-gradient(45deg,#667eea,#764ba2)';
+                setTimeout(() => {
+                    btn.textContent = 'Add to Cart';
+                    btn.style.background = 'linear-gradient(45deg,#ffd700,#ffed4e)';
+                }, 2000);
+            };
         });
     }
 
-    // Delete product
-    async function deleteProduct(id) {
-        if (!confirm('Are you sure?')) return;
-
-        try {
-            const { error } = await supabase
-                .from('products')
-                .delete()
-                .eq('id', id);
-
-            if (error) throw error;
-            console.log('✅ Product deleted');
-            loadProducts();
-            loadProductsList();
-        } catch (error) {
-            console.error('❌ Error deleting product:', error);
-        }
-    }
-
-    // Clear all orders
-    async function clearOrders() {
-        if (!confirm('Are you sure? This will delete ALL orders.')) return;
-
-        try {
-            const { error } = await supabase
-                .from('orders')
-                .delete()
-                .neq('id', ''); // Delete all
-
-            if (error) throw error;
-            console.log('✅ All orders cleared');
-            loadOrders();
-        } catch (error) {
-            console.error('❌ Error clearing orders:', error);
-        }
-    }
-
-    // Initialize on page load
-    window.addEventListener('load', () => {
-        if (!SUPABASE_URL.includes('YOUR_SUPABASE_URL')) {
-            initSupabase();
-        } else {
-            alert('⚠️ Please set your Supabase credentials in the script (SUPABASE_URL and SUPABASE_ANON_KEY)');
-        }
+    // 🔥 CRITICAL: Initialize everything
+    document.addEventListener('DOMContentLoaded', () => {
+        initPusher();
+        renderProducts();
+        attachBuyButtons();
+        
+        document.getElementById('adminCode').onkeypress = (e) => {
+            if (e.key === 'Enter') checkAdminCode();
+        };
     });
 </script>
+
 </body>
 </html>
